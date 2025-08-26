@@ -1,10 +1,10 @@
 import express from "express";
 import bcryptjs from "bcryptjs";
-import { User } from "../models/User";
+import { User } from "../models/User.js";
 import {
   generateTokenSetCookie,
   generateVerificationCode,
-} from "../utils/helper";
+} from "../utils/helper.js";
 
 export const signup = async (req, res) => {
   const { name, email, password } = req.body;
