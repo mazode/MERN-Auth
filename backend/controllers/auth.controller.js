@@ -1,7 +1,10 @@
 import express from "express";
 import bcryptjs from "bcryptjs";
 import { User } from "../models/User";
-import { generateVerificationCode } from "../utils/helper";
+import {
+  generateTokenSetCookie,
+  generateVerificationCode,
+} from "../utils/helper";
 
 export const signup = async (req, res) => {
   const { name, email, password } = req.body;
@@ -9,8 +12,9 @@ export const signup = async (req, res) => {
     if (!name || !email || !password) throw new Error("All fields required");
 
     const userExists = await User.findOne({ email });
-    if (userExists)
+    if (userExists) {
       res.status(400).json({ success: false, message: "User already exists" });
+    }
 
     const hashPassword = await bcryptjs.hash(password, 10);
     const verificationToken = generateVerificationCode();
@@ -23,7 +27,18 @@ export const signup = async (req, res) => {
       verificationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000,
     });
 
-    await User.save();
+    await user.save();
+
+    generateTokenSetCookie(res, user._id);
+
+    res.status(200).json({
+      success: true,
+      message: "User created successfully",
+      user: {
+        ...user._doc,
+        password: null,
+      },
+    });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
