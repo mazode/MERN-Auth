@@ -5,6 +5,7 @@ import {
   generateTokenSetCookie,
   generateVerificationCode,
 } from "../utils/helper.js";
+import { sendVerificationEmail } from "../mailtrap/emails.js";
 
 export const signup = async (req, res) => {
   const { name, email, password } = req.body;
@@ -30,6 +31,8 @@ export const signup = async (req, res) => {
     await user.save();
 
     generateTokenSetCookie(res, user._id);
+
+    await sendVerificationEmail(user.email, verificationToken);
 
     res.status(200).json({
       success: true,
